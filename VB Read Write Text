@@ -1,0 +1,73 @@
+Attribute VB_Name = "Module1"
+Sub prepare_Command()
+Attribute prepare_Command.VB_ProcData.VB_Invoke_Func = " \n14"
+'
+' Replace "" with ' in English Text
+'
+
+'
+    Columns("C:C").Select
+    Selection.Replace What:="“", Replacement:="'", LookAt:=xlPart, _
+        SearchOrder:=xlByColumns, MatchCase:=False, SearchFormat:=False, _
+        ReplaceFormat:=False
+    Selection.Replace What:="”", Replacement:="'", LookAt:=xlPart, _
+        SearchOrder:=xlByColumns, MatchCase:=False, SearchFormat:=False, _
+        ReplaceFormat:=False
+    Selection.Replace What:=Chr(10), Replacement:="<br/>", LookAt:=xlPart, _
+        SearchOrder:=xlByColumns, MatchCase:=False, SearchFormat:=False, _
+        ReplaceFormat:=False
+    Selection.Replace What:=Chr(34), Replacement:="'", LookAt:=xlPart, _
+        SearchOrder:=xlByColumns, MatchCase:=False, SearchFormat:=False, _
+        ReplaceFormat:=False
+'
+' prep_Cmd and copy them in text file
+'
+
+'
+    Const ForReading = 1
+    Const ForWriting = 2
+    Dim fileSpec As String
+    fileSpec = "D:/IM_Command.txt"
+    
+    Range("J2").Select
+    ActiveCell.FormulaR1C1 = _
+        "=IF(ISBLANK(RC[-7]),"""",CONCAT(""im editissue --richContentField=""""RIF - Imported Text 1="",RC[-7],"""""" "",RC[-9]))"
+    Selection.AutoFill Destination:=Range("J2:J" & Range("C" & Rows.Count).End(xlUp).Row)
+    Columns("J:J").Select
+    Selection.Copy
+    Columns("K:K").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Range("K2:K" & Range("C" & Rows.Count).End(xlUp).Row).Select
+    Selection.Copy
+    Dim Filepath As String
+    Filepath = "D:/IM_Command.txt"
+    Open Filepath For Output As #1
+    For Each c In Selection
+        If c <> "" Then
+            Write #1, c
+        End If
+    Next c
+    Close #1
+    
+'
+' Find replace in cmd
+'
+
+'
+    Dim fs, f
+    Dim strContents As String
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    Set f = fs.OpenTextFile(fileSpec, ForReading, TristateFalse)
+    strContents = f.ReadAll
+    strContents = Replace(strContents, Chr(9), "&#9;")
+    strContents = Replace(strContents, Chr(34) + Chr(34), Chr(34))
+    strContents = Replace(strContents, Chr(34) + "im", "im")
+    strContents = Replace(strContents, Chr(34) + vbCrLf, vbCrLf)
+    f.Close
+
+    Set f = fs.OpenTextFile(fileSpec, ForWriting, TristateFalse)
+    f.Write strContents
+    f.Close
+    
+End Sub
