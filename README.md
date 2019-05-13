@@ -1,2 +1,2 @@
 # github-gyan
-A simple github repository for training purpose
+A github repository for Robotics Nanodegree files
